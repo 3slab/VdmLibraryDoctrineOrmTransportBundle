@@ -1,0 +1,31 @@
+{
+    "name": "3slab/vdm-library-doctrine-orm-transport-bundle",
+    "description": "Vdm Doctrine Orm Transport",
+    "type": "symfony-bundle",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Jonathan Bouzekri",
+            "email": "jonathan.bouzekri@suez.com"
+        },
+        {
+            "name": "Julian Marié",
+            "email": "julian.marie@free.fr"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Vdm\\Bundle\\LibraryDoctrineOrmTransportBundle\\": ""
+        }
+    },
+    "require": {
+        "3slab/vdm-library-bundle": "^2.0@beta",
+        "doctrine/doctrine-bundle": "^2.0.7"
+    },
+    "require-dev": {
+        "ext-xml": "*",
+        "ext-curl": "*",
+        "ext-mbstring": "*",
+        "phpunit/phpunit": "^9"
+    }
+}
