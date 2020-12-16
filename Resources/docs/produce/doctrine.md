@@ -28,11 +28,11 @@ options.entities.FQCN.selector | (optional) Define how the executor will try and
 
 ### No data loss policy
 
-By default, the executor won't overwrite a non-null field with null. If you need to bypass this behaviour, your entity should implement `Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Entity\NullableFieldsInterface` and declare `getNullableFields()`:
+By default, the executor won't overwrite a non-null field with null. If you need to bypass this behaviour, your entity should implement `Vdm\Bundle\LibraryBundle\Entity\NullableFieldsInterface` and declare `getNullableFields()`:
 
 ```php
 
-use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Entity\getNullableFields\NullableFieldsInterface;
+use Vdm\Bundle\LibraryBundle\Entity\NullableFieldsInterface;
 
 class Foo implements NullableFieldsInterface
 {
