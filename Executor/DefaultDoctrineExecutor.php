@@ -9,7 +9,7 @@
 namespace Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor;
 
 use Symfony\Component\PropertyAccess\PropertyAccess;
-use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Entity\NullableFieldsInterface;
+use Vdm\Bundle\LibraryBundle\Entity\NullableFieldsInterface;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\NoConnectionException;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\AbstractDoctrineExecutor;
 use Vdm\Bundle\LibraryBundle\Model\Message;
@@ -123,7 +123,7 @@ class DefaultDoctrineExecutor extends AbstractDoctrineExecutor
             $newValue = $accessor->getValue($newerEntity, $property);
 
             // To overwrite a value, it must either not be null, or the property should be nullable.
-            if ($newValue || in_array($property, $nullableFields)) {
+            if (null !== $newValue || in_array($property, $nullableFields, true)) {
                 $accessor->setValue($previousEntity, $property, $newValue);
             }
         }
