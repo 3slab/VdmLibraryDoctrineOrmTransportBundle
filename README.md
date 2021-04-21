@@ -1,4 +1,4 @@
-# Store Doctrine
+# Vdm Library Doctrine Orm Transport
 
 ## Configuration reference
 

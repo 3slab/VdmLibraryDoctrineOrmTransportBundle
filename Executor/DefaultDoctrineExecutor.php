@@ -119,7 +119,7 @@ class DefaultDoctrineExecutor extends AbstractDoctrineExecutor
         $accessor       = PropertyAccess::createPropertyAccessor();
         $nullableFields = $this->getNullableFields($previousEntity);
 
-        foreach($mapping as $property) {
+        foreach ($mapping as $property) {
             $newValue = $accessor->getValue($newerEntity, $property);
 
             // To overwrite a value, it must either not be null, or the property should be nullable.

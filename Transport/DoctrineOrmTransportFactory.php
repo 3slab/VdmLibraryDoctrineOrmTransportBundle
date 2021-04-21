@@ -70,14 +70,17 @@ class DoctrineOrmTransportFactory implements TransportFactoryInterface
     public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface
     {
         if (empty($options['entities'])) {
-            $errorMessage = sprintf('%s requires that you define at least one entity value in the transport\'s options.', __CLASS__);
+            $errorMessage = sprintf(
+                '%s requires that you define at least one entity value in the transport\'s options.',
+                __CLASS__
+            );
             throw new UndefinedEntityException($errorMessage);
         }
 
         unset($options['transport_name']);
 
-        $manager      = $this->getManager($dsn);
-        
+        $manager = $this->getManager($dsn);
+
         $configurator = new DoctrineExecutorConfigurator($manager, $this->logger, $this->serializer, $options);
         $configurator->configure($this->executor);
 
@@ -103,7 +106,7 @@ class DoctrineOrmTransportFactory implements TransportFactoryInterface
             // No need to put it in a variable now. If the connection doesn't exist, Doctrine will throw an exception
             $this->getManager($dsn);
 
-            // If we passe the if statement, and getManager(), we're good. 
+            // If we passe the if statement, and getManager(), we're good.
             return true;
         }
 
@@ -123,7 +126,7 @@ class DoctrineOrmTransportFactory implements TransportFactoryInterface
     protected function getManager(string $dsn): ObjectManager
     {
         preg_match(static::DSN_PATTERN_MATCHING, $dsn, $match);
-        
+
         $match['connection'] = $match['connection'] ?: 'default';
 
         $manager = $this->doctrine->getManager($match['connection']);

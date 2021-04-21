@@ -123,7 +123,8 @@ class DoctrineExecutorConfigurator
                     'property' => $value,
                 ]);
             } else {
-                // otherwise, the getter is "unnatural" and is explicitely defined by the user. The key is the property, the value is the getter.
+                // otherwise, the getter is "unnatural" and is explicitely defined by the user.
+                // The key is the property, the value is the getter.
                 $this->assertPropertyIsReadable($entityFqcn, $value);
 
                 $filter[$key] = $value;
@@ -155,8 +156,10 @@ class DoctrineExecutorConfigurator
 
         // No identifier was defined, we have no way of selecting the entity → stop here.
         if (0 === \count($identifiers)) {
-            $message = sprintf('Class %s does not define a unique identifier and you did not define any `selector` option. You need to define either so that the transport can try and fetch the entity prior to persisting it.', $this->options['entity']);
-            
+            $message = sprintf('Class %s does not define a unique identifier and you did not define any ' .
+                               '`selector` option. You need to define either so that the transport can try and fetch ' .
+                               'the entity prior to persisting it.', $this->options['entity']);
+
             $this->logger->error($message);
 
             throw new InvalidIdentifiersCountException($message);
@@ -164,8 +167,11 @@ class DoctrineExecutorConfigurator
 
         // Composite identifier: ask user to fallback to selector mode so we have less code to maintain.
         if (\count($identifiers) > 1) {
-            $message = sprintf('Composite identifiers are not supported (%s). Please use multiple selector.', implode(',', $identifiers));
-            
+            $message = sprintf(
+                'Composite identifiers are not supported (%s). Please use multiple selector.',
+                implode(',', $identifiers)
+            );
+
             $this->logger->error($message);
 
             throw new InvalidIdentifiersCountException($message);
@@ -203,7 +209,11 @@ class DoctrineExecutorConfigurator
         $entityInstance = $reflection->newInstanceWithoutConstructor();
 
         if (!$this->accessor->isReadable($entityInstance, $property)) {
-            $message = sprintf('Cound not define a way to access property (%s) value in %s. Did you define a public getter?', $property, $entityFqcn);
+            $message = sprintf(
+                'Cound not define a way to access property (%s) value in %s. Did you define a public getter?',
+                $property,
+                $entityFqcn
+            );
 
             throw new UnreadableEntityPropertyException($message);
         }

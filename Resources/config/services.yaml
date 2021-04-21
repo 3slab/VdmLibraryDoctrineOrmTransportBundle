@@ -9,4 +9,4 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     Vdm\Bundle\LibraryDoctrineOrmTransportBundle\:
         resource: '../../*'
-        exclude: '../../{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+        exclude: '../../{DependencyInjection,Entity,Migrations,Tests,vendor,Kernel.php}'

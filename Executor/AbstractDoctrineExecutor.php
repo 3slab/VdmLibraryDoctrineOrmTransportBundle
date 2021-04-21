@@ -38,19 +38,19 @@ abstract class AbstractDoctrineExecutor
      */
     protected $repositories = [];
 
-    /** 
+    /**
      * @var ObjectManager $objectManager
-    */
+     */
     protected $objectManager;
 
-    /** 
+    /**
      * @var LoggerInterface $logger
-    */
+     */
     protected $logger;
 
-    /** 
+    /**
      * @var SerializerInterface $serializer
-    */
+     */
     protected $serializer;
 
     abstract public function execute(Message $entity): void;

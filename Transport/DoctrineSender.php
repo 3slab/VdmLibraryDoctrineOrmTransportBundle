@@ -35,7 +35,7 @@ class DoctrineSender
      * @return void
      */
     public function send(Message $message): void
-    {   
+    {
         $this->executor->execute($message);
     }
 }
