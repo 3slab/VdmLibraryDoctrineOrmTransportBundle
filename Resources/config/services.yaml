@@ -10,9 +10,3 @@ services:
     Vdm\Bundle\LibraryDoctrineOrmTransportBundle\:
         resource: '../../*'
         exclude: '../../{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
-
-    # controllers are imported separately to make sure services can be injected
-    # as action arguments even if you don't extend any base controller class
-    Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Controller\:
-        resource: '../../Controller'
-        tags: ['controller.service_arguments']
