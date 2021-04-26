@@ -19,11 +19,10 @@ class DoctrineSender
     protected $executor;
 
     /**
-     * @param AbstractDoctrineExecutor  $executor
+     * @param AbstractDoctrineExecutor $executor
      */
-    public function __construct(
-        AbstractDoctrineExecutor $executor
-    ) {
+    public function __construct(AbstractDoctrineExecutor $executor)
+    {
         $this->executor = $executor;
     }
 

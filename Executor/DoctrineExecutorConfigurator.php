@@ -10,13 +10,13 @@ namespace Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor;
 
 use Doctrine\Persistence\ObjectManager;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use ReflectionClass;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Serializer\SerializerInterface;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\InvalidIdentifiersCountException;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\UnreadableEntityPropertyException;
-use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\AbstractDoctrineExecutor;
 
 class DoctrineExecutorConfigurator
 {
@@ -45,16 +45,23 @@ class DoctrineExecutorConfigurator
      */
     protected $accessor;
 
+    /**
+     * DoctrineExecutorConfigurator constructor.
+     * @param ObjectManager $objectManager
+     * @param SerializerInterface $serializer
+     * @param array $options
+     * @param LoggerInterface|null $logger
+     */
     public function __construct(
         ObjectManager $objectManager,
-        LoggerInterface $logger,
         SerializerInterface $serializer,
-        array $options
+        array $options,
+        LoggerInterface $logger = null
     ) {
         $this->objectManager = $objectManager;
-        $this->logger        = $logger;
-        $this->serializer    = $serializer;
-        $this->options       = $options;
+        $this->serializer = $serializer;
+        $this->options = $options;
+        $this->logger = $logger ?? new NullLogger();
 
         $this->accessor = PropertyAccess::createPropertyAccessorBuilder()
             ->enableMagicCall()
@@ -65,14 +72,15 @@ class DoctrineExecutorConfigurator
     /**
      * Configures the executor with specificities of each registered entity.
      *
-     * @param  AbstractDoctrineExecutor $executor
+     * @param AbstractDoctrineExecutor $executor
      *
      * @return void
+     * @throws InvalidIdentifiersCountException
+     * @throws UnreadableEntityPropertyException
+     * @throws \ReflectionException
      */
     public function configure(AbstractDoctrineExecutor $executor): void
     {
-        $repositories = [];
-
         $executor->setManager($this->objectManager);
         $executor->setLogger($this->logger);
         $executor->setSerializer($this->serializer);
@@ -99,7 +107,10 @@ class DoctrineExecutorConfigurator
     /**
      * This method defines how to build a filter for an entity when the user provided an explicit configuration.
      *
+     * @param string $entityFqcn
      * @return array
+     * @throws UnreadableEntityPropertyException
+     * @throws \ReflectionException
      */
     protected function getSelectorFilter(string $entityFqcn): array
     {
@@ -143,7 +154,11 @@ class DoctrineExecutorConfigurator
     /**
      * This method guesses how to build a filter for the entity when the user didn't provide an explicit configuration.
      *
+     * @param string $entityFqcn
      * @return mixed
+     * @throws InvalidIdentifiersCountException
+     * @throws UnreadableEntityPropertyException
+     * @throws \ReflectionException
      */
     protected function guessConfiguration(string $entityFqcn)
     {
@@ -196,12 +211,12 @@ class DoctrineExecutorConfigurator
     /**
      * Ensures the given property is readable on the subject entity.
      *
-     * @param  string $entityFqcn
-     * @param  string $property
-     *
-     * @throws UnreadableEntityPropertyException The given property isn't readable by the PropertyAccessor
+     * @param string $entityFqcn
+     * @param string $property
      *
      * @return void
+     * @throws \ReflectionException
+     * @throws UnreadableEntityPropertyException The given property isn't readable by the PropertyAccessor
      */
     protected function assertPropertyIsReadable(string $entityFqcn, string $property): void
     {

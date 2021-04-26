@@ -9,9 +9,7 @@
 namespace Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor;
 
 use Symfony\Component\PropertyAccess\PropertyAccess;
-use Vdm\Bundle\LibraryBundle\Entity\NullableFieldsInterface;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\NoConnectionException;
-use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\AbstractDoctrineExecutor;
 use Vdm\Bundle\LibraryBundle\Model\Message;
 
 class DefaultDoctrineExecutor extends AbstractDoctrineExecutor

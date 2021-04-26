@@ -8,42 +8,31 @@
 
 namespace Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Transport;
 
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\AbstractDoctrineExecutor;
-use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Transport\DoctrineSender;
 
 class DoctrineSenderFactory
 {
     /**
      * @var AbstractDoctrineExecutor
      */
-    protected $entityManager;
+    protected $executor;
 
     /**
-     * @var LoggerInterface
+     * DoctrineSenderFactory constructor.
+     * @param AbstractDoctrineExecutor $executor
      */
-    protected $logger;
-
-    public function __construct(
-        AbstractDoctrineExecutor $executor,
-        LoggerInterface $logger = null
-    ) {
+    public function __construct(AbstractDoctrineExecutor $executor)
+    {
         $this->executor = $executor;
-        $this->logger   = $logger ?? new NullLogger();
     }
 
     /**
      * Created the DoctrineSender object based on messenger configuration.
      *
-     * @param  array  $options
-     *
      * @return DoctrineSender
      */
     public function createDoctrineSender(): DoctrineSender
     {
-        $sender = new DoctrineSender($this->executor, $this->logger);
-
-        return $sender;
+        return new DoctrineSender($this->executor);
     }
 }

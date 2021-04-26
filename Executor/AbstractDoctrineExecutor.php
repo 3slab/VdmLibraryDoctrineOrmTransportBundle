@@ -39,9 +39,9 @@ abstract class AbstractDoctrineExecutor
     protected $repositories = [];
 
     /**
-     * @var ObjectManager $objectManager
+     * @var ObjectManager $manager
      */
-    protected $objectManager;
+    protected $manager;
 
     /**
      * @var LoggerInterface $logger
@@ -53,16 +53,28 @@ abstract class AbstractDoctrineExecutor
      */
     protected $serializer;
 
+    /**
+     * @param Message $entity
+     */
     abstract public function execute(Message $entity): void;
 
+    /**
+     * @return ObjectManager
+     */
     public function getManager(): ObjectManager
     {
         return $this->manager;
     }
 
-    public function setManager(ObjectManager $manager)
+    /**
+     * @param ObjectManager $manager
+     * @return AbstractDoctrineExecutor
+     */
+    public function setManager(ObjectManager $manager): self
     {
         $this->manager = $manager;
+
+        return $this;
     }
 
     /**

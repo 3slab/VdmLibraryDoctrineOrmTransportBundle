@@ -11,6 +11,7 @@ namespace Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Transport;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
@@ -18,8 +19,6 @@ use Symfony\Component\Serializer\SerializerInterface as SymfonySerializer;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\UndefinedEntityException;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\AbstractDoctrineExecutor;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\DoctrineExecutorConfigurator;
-use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Transport\DoctrineSenderFactory;
-use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Transport\DoctrineTransport;
 
 class DoctrineOrmTransportFactory implements TransportFactoryInterface
 {
@@ -42,21 +41,26 @@ class DoctrineOrmTransportFactory implements TransportFactoryInterface
     protected $executor;
 
     /**
-     * @param LoggerInterface          $logger
-     * @param ManagerRegistry          $doctrine
+     * @var SymfonySerializer
+     */
+    protected $serializer;
+
+    /**
+     * @param ManagerRegistry $doctrine
      * @param AbstractDoctrineExecutor $executor
-     * @param SymfonySerializer        $serializer
+     * @param SymfonySerializer $serializer
+     * @param LoggerInterface|null $vdmLogger
      */
     public function __construct(
-        LoggerInterface $logger,
         ManagerRegistry $doctrine,
         AbstractDoctrineExecutor $executor,
-        SymfonySerializer $serializer
+        SymfonySerializer $serializer,
+        LoggerInterface $vdmLogger = null
     ) {
-        $this->logger     = $logger;
         $this->doctrine   = $doctrine;
         $this->executor   = $executor;
         $this->serializer = $serializer;
+        $this->logger     = $vdmLogger ?? new NullLogger();
     }
 
     /**
@@ -81,10 +85,10 @@ class DoctrineOrmTransportFactory implements TransportFactoryInterface
 
         $manager = $this->getManager($dsn);
 
-        $configurator = new DoctrineExecutorConfigurator($manager, $this->logger, $this->serializer, $options);
+        $configurator = new DoctrineExecutorConfigurator($manager, $this->serializer, $options, $this->logger);
         $configurator->configure($this->executor);
 
-        $doctrineSenderFactory = new DoctrineSenderFactory($this->executor, $this->logger);
+        $doctrineSenderFactory = new DoctrineSenderFactory($this->executor);
         $doctrineSender        = $doctrineSenderFactory->createDoctrineSender();
 
         return new DoctrineTransport($doctrineSender, $this->logger);
