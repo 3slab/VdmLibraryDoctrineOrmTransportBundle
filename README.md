@@ -15,6 +15,8 @@ framework:
             producer:
                 dsn: vdm+doctrine_orm://mycustomconnection
                 options:
+                    doctrine_executor: ~
+                    default_entity: ~
                     entities:
                         App\Entity\Demande:
                             selector: RefDemande
@@ -23,6 +25,8 @@ framework:
 Configuration | Description
 --- | ---
 dsn | Always starts with `vdm+doctrine://`. You can specify the connection to use with `vdm+doctrine://mycustomconnection` (fits into `doctrine.orm.xxx_entity_manager`). If you use the default connection, you can use only `vdm+doctrine://`
+options.doctrine_executor | set the id (in the container of services) of a custom doctrine executor to use instead of the [DefaultDoctrineExecutor](./Executor/DefaultDoctrineExecutor.php)
+options.default_entity | set the class of default entity to populate if none passed in the message metadatas
 options.entities | Array of entities to register. At least one entity must be declared.
 options.entities.FQCN.selector | (optional) Define how the executor will try and fetch a pre-existing entity before persisting (see below)
 
@@ -32,7 +36,7 @@ By default, the executor won't overwrite a non-null field with null. If you need
 
 ```php
 
-use Vdm\Bundle\LibraryBundle\Entity\NullableFieldsInterface;
+use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executable\NullableFieldsInterface;
 
 class Foo implements NullableFieldsInterface
 {
@@ -153,9 +157,67 @@ Under the hood, the repository will fetch the entities like this:
     $repo->findOneBy([ 'reference' => $baz->getReference() ]);
 ```
 
+
+## Doctrine Executor
+
+Doctrine executor allows you to customize the behavior of the doctrine ORM transport per transport definition inside your `messenger.yaml` file.
+
+If you don't set a custom `doctrine_executor` option when declaring the transport, the default [DefaultDoctrineExecutor](./Executor/DefaultDoctrineExecutor.php) is used.
+
+You can override this behavior in your project by providing a class that extends `Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\AbstractDoctrineExecutor`.
+
+```
+namespace App\Executor\Doctrine;
+
+use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\AbstractDoctrineExecutor;
+use Vdm\Bundle\LibraryBundle\Model\Message;
+
+class CustomDoctrineExecutor extends AbstractDoctrineExecutor
+{
+    public function execute(Message $message): void
+    {
+        if (!$this->manager) {
+            throw new NoConnectionException('No connection was defined.');
+        }
+
+        $entityMetadatas = $message->getMetadatasByKey('entity');
+        $entityMetadata  = array_shift($entityMetadatas);
+        $entityClass     = $entityMetadata->getValue();
+        $entity          = $this->serializer->denormalize($message->getPayload(), $entityClass);
+        $entity          = $this->matchEntity($entity);
+
+        $this->manager->persist($entity);
+        $this->manager->flush();
+    }
+}
+```
+
+Then references this custom executor in your transport definition in your project `messenger.yaml` :
+
+```
+framework:
+    messenger:
+        transports:
+            store-entity:
+                options:
+                    doctrine_executor: App\Executor\Doctrine\CustomDoctrineExecutor
+```
+
 ## Deserializaion
 
-For the transport to know to which class the payload should be deserialized, you must provide the entity's fully qualified class name in the message's metadata, with key `entity`. Example `new Metadata('entity', 'App\Entity\Foo')`.
+For the transport to know to which class the payload should be deserialized, you can either :
+
+* provide the entity's fully qualified class name in the message's metadata, with key `entity`. Example `new Metadata('entity', 'App\Entity\Foo')`.
+* configure a default entity on the transport level
+
+    ```
+    framework:
+        messenger:
+            transports:
+                store-entity:
+                    options:
+                        default_entity: App\Entity\Foo
+    ```
 
 ## Limitations
 

@@ -14,6 +14,9 @@ use Vdm\Bundle\LibraryBundle\Model\Message;
 
 class DefaultDoctrineExecutor extends AbstractDoctrineExecutor
 {
+    /**
+     * {@inheritDoc}
+     */
     public function execute(Message $message): void
     {
         if (!$this->manager) {
@@ -21,10 +24,15 @@ class DefaultDoctrineExecutor extends AbstractDoctrineExecutor
         }
 
         $entityMetadatas = $message->getMetadatasByKey('entity');
-        $entityMetadata  = array_shift($entityMetadatas);
-        $entityClass     = $entityMetadata->getValue();
-        $entity          = $this->serializer->denormalize($message->getPayload(), $entityClass);
-        $entity          = $this->matchEntity($entity);
+        if (count($entityMetadatas) > 0) {
+            $entityMetadata = array_shift($entityMetadatas);
+            $entityClass = $entityMetadata->getValue();
+        } else {
+            $entityClass = $this->getDefaultEntity();
+        }
+
+        $entity = $this->serializer->denormalize($message->getPayload(), $entityClass);
+        $entity = $this->matchEntity($entity);
 
         $this->manager->persist($entity);
         $this->manager->flush();

@@ -10,12 +10,12 @@ namespace Vdm\Bundle\LibraryDoctrineOrmTransportBundle;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\DependencyInjection\Compiler\SetDoctrineExecutorCompilerPass;
+use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\DependencyInjection\Compiler\DoctrineExecutorCompilerPass;
 
 class VdmLibraryDoctrineOrmTransportBundle extends Bundle
 {
     public function build(ContainerBuilder $container)
     {
-        $container->addCompilerPass(new SetDoctrineExecutorCompilerPass());
+        $container->addCompilerPass(new DoctrineExecutorCompilerPass());
     }
 }

@@ -39,6 +39,11 @@ abstract class AbstractDoctrineExecutor
     protected $repositories = [];
 
     /**
+     * @var string
+     */
+    protected $defaultEntity;
+
+    /**
      * @var ObjectManager $manager
      */
     protected $manager;
@@ -54,9 +59,9 @@ abstract class AbstractDoctrineExecutor
     protected $serializer;
 
     /**
-     * @param Message $entity
+     * @param Message $message
      */
-    abstract public function execute(Message $entity): void;
+    abstract public function execute(Message $message): void;
 
     /**
      * @return ObjectManager
@@ -144,6 +149,25 @@ abstract class AbstractDoctrineExecutor
     public function getFilters(string $key): array
     {
         return $this->filters[$key];
+    }
+
+    /**
+     * @param string $className
+     * @return $this
+     */
+    public function setDefaultEntity(string $className): self
+    {
+        $this->defaultEntity = $className;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDefaultEntity(): string
+    {
+        return $this->defaultEntity;
     }
 
     /**

@@ -27,7 +27,7 @@ class VdmLibraryDoctrineOrmTransportExtension extends Extension
     public function load(array $configs, ContainerBuilder $container)
     {
         $container->registerForAutoconfiguration(AbstractDoctrineExecutor::class)
-            ->addTag('vdm_library.doctrine_executor')
+            ->addTag('vdm_library.doctrine_orm_executor')
         ;
 
         $loader = new YamlFileLoader(

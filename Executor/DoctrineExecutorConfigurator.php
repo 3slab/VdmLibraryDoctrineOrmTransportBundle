@@ -16,6 +16,7 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\Serializer\SerializerInterface;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\InvalidIdentifiersCountException;
+use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\UndefinedEntityException;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\UnreadableEntityPropertyException;
 
 class DoctrineExecutorConfigurator
@@ -78,12 +79,17 @@ class DoctrineExecutorConfigurator
      * @throws InvalidIdentifiersCountException
      * @throws UnreadableEntityPropertyException
      * @throws \ReflectionException
+     * @throws UndefinedEntityException
      */
     public function configure(AbstractDoctrineExecutor $executor): void
     {
         $executor->setManager($this->objectManager);
         $executor->setLogger($this->logger);
         $executor->setSerializer($this->serializer);
+
+        if (!empty($this->options['default_entity'])) {
+            $this->configureDefaultEntity($executor, $this->options['default_entity']);
+        }
 
         foreach (array_keys($this->options['entities']) as $entityFqcn) {
             $executor->addRepository($entityFqcn, $this->objectManager->getRepository($entityFqcn));
@@ -102,6 +108,20 @@ class DoctrineExecutorConfigurator
                 ;
             }
         }
+    }
+
+    /**
+     * @param AbstractDoctrineExecutor $executor
+     * @param string $className
+     * @throws UndefinedEntityException
+     */
+    protected function configureDefaultEntity(AbstractDoctrineExecutor $executor, string $className)
+    {
+        if (!class_exists($className)) {
+            throw new UndefinedEntityException(sprintf('Entity %s not found', $className));
+        }
+
+        $executor->setDefaultEntity($className);
     }
 
     /**

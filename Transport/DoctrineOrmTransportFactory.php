@@ -16,9 +16,11 @@ use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializer;
+use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\InvalidIdentifiersCountException;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\UndefinedEntityException;
-use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\AbstractDoctrineExecutor;
+use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Exception\UnreadableEntityPropertyException;
 use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\DoctrineExecutorConfigurator;
+use Vdm\Bundle\LibraryDoctrineOrmTransportBundle\Executor\DoctrineExecutorRegistry;
 
 class DoctrineOrmTransportFactory implements TransportFactoryInterface
 {
@@ -36,9 +38,9 @@ class DoctrineOrmTransportFactory implements TransportFactoryInterface
     protected $doctrine;
 
     /**
-     * @var AbstractDoctrineExecutor $executor
+     * @var DoctrineExecutorRegistry
      */
-    protected $executor;
+    protected $doctrineExecutorRegistry;
 
     /**
      * @var SymfonySerializer
@@ -47,29 +49,33 @@ class DoctrineOrmTransportFactory implements TransportFactoryInterface
 
     /**
      * @param ManagerRegistry $doctrine
-     * @param AbstractDoctrineExecutor $executor
+     * @param DoctrineExecutorRegistry $doctrineExecutorRegistry
      * @param SymfonySerializer $serializer
      * @param LoggerInterface|null $vdmLogger
      */
     public function __construct(
         ManagerRegistry $doctrine,
-        AbstractDoctrineExecutor $executor,
+        DoctrineExecutorRegistry $doctrineExecutorRegistry,
         SymfonySerializer $serializer,
         LoggerInterface $vdmLogger = null
     ) {
-        $this->doctrine   = $doctrine;
-        $this->executor   = $executor;
+        $this->doctrine = $doctrine;
+        $this->doctrineExecutorRegistry = $doctrineExecutorRegistry;
         $this->serializer = $serializer;
-        $this->logger     = $vdmLogger ?? new NullLogger();
+        $this->logger = $vdmLogger ?? new NullLogger();
     }
 
     /**
      * Creates DoctrineTransport
-     * @param  string              $dsn
-     * @param  array               $options
-     * @param  SerializerInterface $serializer
+     * @param string $dsn
+     * @param array $options
+     * @param SerializerInterface $serializer
      *
      * @return TransportInterface
+     * @throws UndefinedEntityException
+     * @throws \ReflectionException
+     * @throws InvalidIdentifiersCountException
+     * @throws UnreadableEntityPropertyException
      */
     public function createTransport(string $dsn, array $options, SerializerInterface $serializer): TransportInterface
     {
@@ -85,11 +91,18 @@ class DoctrineOrmTransportFactory implements TransportFactoryInterface
 
         $manager = $this->getManager($dsn);
 
-        $configurator = new DoctrineExecutorConfigurator($manager, $this->serializer, $options, $this->logger);
-        $configurator->configure($this->executor);
+        $executor = $this->doctrineExecutorRegistry->getDefault();
+        if (isset($options['doctrine_executor'])) {
+            $executor = $this->doctrineExecutorRegistry->get($options['doctrine_executor']);
+        }
 
-        $doctrineSenderFactory = new DoctrineSenderFactory($this->executor);
-        $doctrineSender        = $doctrineSenderFactory->createDoctrineSender();
+        $this->logger->debug(sprintf('Doctrine executor loaded is an instance of "%s"', get_class($executor)));
+
+        $configurator = new DoctrineExecutorConfigurator($manager, $this->serializer, $options, $this->logger);
+        $configurator->configure($executor);
+
+        $doctrineSenderFactory = new DoctrineSenderFactory($executor);
+        $doctrineSender = $doctrineSenderFactory->createDoctrineSender();
 
         return new DoctrineTransport($doctrineSender, $this->logger);
     }
@@ -122,8 +135,6 @@ class DoctrineOrmTransportFactory implements TransportFactoryInterface
      * Returns the manager from Doctrine registry.
      *
      * @param  string $dsn
-     *
-     * @throws InvalidArgumentException invalid connection
      *
      * @return ObjectManager
      */
