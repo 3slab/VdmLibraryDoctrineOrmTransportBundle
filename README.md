@@ -1,5 +1,7 @@
 # Vdm Library Doctrine Orm Transport
 
+**DEPRECATED IN VDM 3.X. USE [VdmLibraryDoctrineTransportBundle](https://github.com/3slab/VdmLibraryDoctrineTransportBundle) INSTEAD**
+
 ## Configuration reference
 
 There are two parts ton configure: the transport, and Doctrine's behaviour.
